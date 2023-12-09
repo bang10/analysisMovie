@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 import reviewDto
-movieReviewList = []
+whetherMovieBoxOfficeList = {}
 
 # README 2번 흥행 여부
 def isBoxOffice(visitor) :
@@ -43,14 +43,18 @@ def getReviewInfo(baseUrl, movieIdList):
         movieScoreTag = parser.select('.list_cont dd')
         movieScore = float(chageDataOnlyNumber(movieScoreTag[6].text))
         # 관람객 수
-        visitor = chageDataOnlyNumber(movieScoreTag[7].text)
+        print(movieScoreTag)
+        try:
+            visitor = chageDataOnlyNumber(movieScoreTag[7].text)
+        except :
+            visitor = chageDataOnlyNumber(movieScoreTag[6].text)
         # 흥행 여부
         boxOffice = isBoxOffice(int(visitor))
-
+        whetherMovieBoxOfficeList[movieTitle] = boxOffice
         # 관람객 ID 정보
         # TODO
-        visitorTag = parser.select('ul', {'class': 'list_comment'})
-        print(visitorTag)
+        visitorTag = parser.select('p')
+        # print(visitorTag)
         # 관람객 아이디 당 평점
 
         # 관람평
@@ -58,14 +62,15 @@ def getReviewInfo(baseUrl, movieIdList):
 
 def main():
     baseUrl = 'https://movie.daum.net/moviedb/grade?movieId='
-    # movieIdList = ['39519', '3791', '35497', '40878', '43729', '44085', '46121', '145342', '1660', '109512',
-    #                '160244', '122749', '104209', '43172', '76384', '100237', '89720', '69737', '44832', '139237',
-    #                '3649', '40778', '41951', '62708', '43584', '111292', '79544', '163777', '115601', '53080']
+    movieIdList = ['39519', '3791', '35497', '40878', '43729', '44085', '46121', '145342', '1660', '109512',
+                   '160244', '122749', '104209', '43172', '76384', '100237', '89720', '69737', '44832', '139237',
+                   '3649', '40778', '41951', '62708', '43584', '111292', '79544', '163777', '115601', '53080']
 
     # 테스트 코드, 실제 제출할 때는 위의 리스트로 수정
-    movieIdList = ['39519']
+    # movieIdList = ['39519']
 
     getReviewInfo(baseUrl, movieIdList)
+    print('영화별 흥행 여부 (관람객 50만명 이상)', whetherMovieBoxOfficeList)
 
 
 if __name__ == '__main__':
