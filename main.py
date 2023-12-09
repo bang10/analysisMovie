@@ -5,10 +5,9 @@ import pandas as pd
 import reviewDto
 whetherMovieBoxOfficeList = {}
 
-# README 2번 흥행 여부
 def isBoxOffice(visitor) :
     if visitor == 0:
-        return 'Movie Error'
+        return 'error'
 
     return True if visitor > 500000 else False
 
@@ -38,7 +37,7 @@ def movieBaseInfo(parser):
     movieTitle = titleTag.text
     movieBaseInfo['movieTitle'] = movieTitle
 
-    # 누적 관람객이 없는 김에 모두 예외처리
+    # 누적 관람객이 없는 경우 예외처리 하는 김에 모두 예외처리
     try:
         # 장르
         genre = parser.find('dt', text='장르').find_next('dd').get_text(strip=True)
@@ -66,6 +65,11 @@ def movieBaseInfo(parser):
 
     return movieBaseInfo
 
+# TODO 각각의 리뷰 데이터 필요
+def review(parsar):
+    reviewList = parsar.select('div', {'class': 'cmt_box'})
+    print('review', reviewList)
+
 def getReviewInfo(baseUrl, movieIdList):
     for movieId in movieIdList:
         movieUrl = baseUrl + movieId
@@ -77,19 +81,14 @@ def getReviewInfo(baseUrl, movieIdList):
         movieInfo = movieBaseInfo(parser)
 
         # 영화 리뷰 리스트
+        review(parser)
 
         # 흥행 여부
         boxOffice = isBoxOffice(chageDataOnlyNumber(movieInfo['visitor']))
         whetherMovieBoxOfficeList[movieInfo['movieTitle']] = boxOffice
 
-        # 관람객 ID 정보
-        # TODO
-        # visitorTag = parser.select('p')
-
-
-
-
 def main():
+    print('Start!!')
     baseUrl = 'https://movie.daum.net/moviedb/grade?movieId='
     # movieIdList = ['39519', '3791', '35497', '40878', '43729', '44085', '46121', '145342', '1660', '109512',
     #                '160244', '122749', '104209', '43172', '76384', '100237', '89720', '69737', '44832', '139237',
