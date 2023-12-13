@@ -3,8 +3,11 @@
 # - 수집한 데이터 전처리 (KoNLPy)
 # - 수집한 리뷰 데이터 분류
 #
+# 기능별 나누고 싶었는데,,,
+# 수집한 데이터
 # TODO
 # 1) 수집한 리뷰 데이터 긍정/부정 분류(별표가 기준, 텍스트 학습)
+# CLEAR
 # 2) 수집한 리뷰 데이터에서 흥행여부 예측(흥행기준 50만, 영화 개봉: 2000~2010)
 # TODO
 # 3) 수집한 리뷰 데이터의 아이디 50개 이상 수집하여 선호 장르 분류(별표가 기준, 텍스트 학습)
@@ -12,12 +15,15 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-
+import os
+import numpy as np
 import reviewDto
+
+excelWriter = pd.ExcelWriter('final_test_BANGSEONGHWAN.xlsx', engine='openpyxl')
 
 def isBoxOffice(visitor) :
     if visitor == 0:
-        return 'error'
+        return 'Nan'
 
     return True if visitor > 500000 else False
 
@@ -53,8 +59,7 @@ def movieBaseInfo(parser):
         genre = parser.find('dt', text='장르').find_next('dd').get_text(strip=True)
         movieBaseInfo['genre'] = genre
     except:
-        genre = 'genre is not found'
-        movieBaseInfo['genre'] = genre
+        movieBaseInfo['genre'] = 'Empty'
 
     try:
         # 영화 별점
@@ -78,26 +83,38 @@ def getReviewList(parsar):
     reviewList = parsar.find('div', {'class': 'ratings'})
     print('review', reviewList)
 
+def htmlParsar(movieUrl):
+    response = requests.get(movieUrl)
+    sourceType = response.text
+    parser = BeautifulSoup(sourceType, 'html.parser')
+
+    return parser
+
 def getReviewInfo(baseUrl, movieIdList):
     whetherMovieBoxOfficeList = {}
     for movieId in movieIdList:
         movieUrl = baseUrl + movieId
-        print('Movie url: ', movieUrl)
-        response = requests.get(movieUrl)
-        sourceType = response.text
-        parser = BeautifulSoup(sourceType, 'html.parser')
+        parser = htmlParsar(movieUrl)
 
         # 영화 기본 정보
         movieInfo = movieBaseInfo(parser)
-
-        # 영화 리뷰 리스트
-        getReviewList(parser)
 
         # 흥행 여부
         boxOffice = isBoxOffice(chageDataOnlyNumber(movieInfo['visitor']))
         whetherMovieBoxOfficeList[movieInfo['movieTitle']] = boxOffice
 
     return whetherMovieBoxOfficeList
+
+def tranceExcel(division, param):
+    if division == 2:
+        param.to_excel(excelWriter, sheet_name='boxOffice')
+    elif division == 1:
+        param.to_excel(excelWriter, sheet_name='divisionIsPositive')
+    elif division == 3:
+        param.to_excel(excelWriter, sheet_name='preferMovie')
+    else:
+        print("It was have error when trance excel")
+
 
 def main():
     print('Start to get movie base information and review analysis!!')
@@ -111,6 +128,13 @@ def main():
 
     # 2번 흥행 여부
     isBoxOfficeList = getReviewInfo(baseUrl, movieIdList)
+    try:
+        dfBoxOfficeList = pd.DataFrame(isBoxOfficeList, index=[False])
+        tranceExcel(2, dfBoxOfficeList)
+    except Exception as e:
+        print('error trance to excel')
+        print(e)
+
     print('영화별 흥행 여부 (관람객 50만명 이상)\n', isBoxOfficeList)
 
 
