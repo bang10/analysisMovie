@@ -69,6 +69,14 @@ def getReviewList(parsar):
     reviewList = parsar.find('div', {'class': 'ratings'})
     print('review', reviewList)
 
+# TODO 리뷰 긍정/부정 구분
+def isReviewPositive(reviewContent):
+    print(reviewContent)
+
+# TODO 해당 ID가 선호하는 장르
+def offerGenre(reviewData):
+    print(reviewData)
+
 def htmlParsar(movieUrl):
     response = requests.get(movieUrl)
     sourceType = response.text
@@ -99,7 +107,7 @@ def tranceExcel(division, param):
     elif division == 3:
         param.to_excel(excelWriter, sheet_name='preferMovie')
     else:
-        print("It was have error when trance excel")
+        print("It was had error when trance excel")
 
 
 def main():
